@@ -1,0 +1,33 @@
+!pip install numpy==1.22.0
+!pip install geopandas mapclassify
+!pip install keplergl
+!pip install osmnx
+
+from keplergl import KeplerGl
+import osmnx as ox
+
+from google.colab import output
+output.enable_custom_widget_manager()
+
+CITY_NAME = 'Тверь'
+city = ox.geocode_to_gdf(CITY_NAME)
+city.explore (tiles = "CartoDB positron")
+
+tags = {'admin_level': '9'}
+boundaries = ox.geometries_from_polygon(city.unary_union, tags)
+boundaries.explore(tiles="CartoDB positron")
+
+DISTRICT_NAME = 'Заволжский район, Тверь'
+district = ox.geocode_to_gdf(DISTRICT_NAME)
+tags = {'building':True}
+buildings = ox.geometries_from_polygon (district.unary_union, tags)
+buildings.explore(tiles="CartoDB positron")
+
+buildings.reset_index(inplace=True)
+buildings.head()
+
+map_tver = KeplerGl(height = 500)
+map_tver.add_data(data = city.copy(), name = 'Границы Твери')
+map_tver.add_data(data = boundaries.copy(), name = 'Районы Твери')
+map_tver.add_data(data = buildings.copy(), name = 'Здания Заволжского района')
+map_tver
